@@ -6,10 +6,11 @@ import * as S from './styles';
 import { IProductItem } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
 
-const Home: React.FC = ({ route }) => {
+const Home: React.FC = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
   const { itemId } = route.params;
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [productItem, setProductItem] = useState<IProductItem | null>(null);
 
   const addEventToCalendar = () => {
@@ -30,46 +31,71 @@ const Home: React.FC = ({ route }) => {
 
   const getProductItem = async (id: number) => {
     setLoading(true);
+    setError(null);
     const queryString = `?select=${INFOS_PRODUCT_ITEM}`;
     const item = await service.getProductsItem(id, queryString);
 
-    setProductItem(item);
+    if (!item) {
+      setError('Product not found. Please try again later.');
+    } else {
+      setProductItem(item);
+    }
     setLoading(false);
+  };
+
+  const handleRetry = () => {
+    getProductItem(itemId);
   };
 
   useEffect(() => {
     getProductItem(itemId);
   }, [itemId]);
 
-  return (
-    <>
-    {
-      !loading && productItem ?
-      <S.Container>
-        <S.Header>
-          <S.Thumbnail source={{uri:productItem.thumbnail}}/>
-          <S.HeaderInfomation>
-            <S.Title>{productItem.title}</S.Title>
-            <S.Rating>Rating: {productItem.rating}</S.Rating>
-            <S.Price>$ {productItem.price}</S.Price>
-          </S.HeaderInfomation>
-        </S.Header>
-        <S.Body>
-          <S.Label>Brand: <S.Value>{productItem.brand}</S.Value></S.Label>
-          <S.Label>Description: <S.Value>{productItem.description}</S.Value></S.Label>
-          <S.Label>Stock: <S.Value>{productItem.stock}</S.Value></S.Label>
-        </S.Body>
-        <S.Footer onPress={addEventToCalendar} testID="create-reminder-button">
-          <S.Label>Create a reminder</S.Label>
-          <FontAwesome6 name="bell" iconStyle="solid" />
-        </S.Footer>
-      </S.Container>
-      :
+  if (loading) {
+    return (
       <S.Loading>
         <ActivityIndicator />
       </S.Loading>
-    }
-    </>
+    );
+  }
+
+  if (error) {
+    return (
+      <S.Container>
+        <S.Body>
+          <S.Label>{error}</S.Label>
+          <S.Footer onPress={handleRetry} testID="retry-button">
+            <S.Label>Retry</S.Label>
+          </S.Footer>
+        </S.Body>
+      </S.Container>
+    );
+  }
+
+  if (!productItem) {
+    return null;
+  }
+
+  return (
+    <S.Container>
+      <S.Header>
+        <S.Thumbnail source={{uri:productItem.thumbnail}}/>
+        <S.HeaderInfomation>
+          <S.Title>{productItem.title}</S.Title>
+          <S.Rating>Rating: {productItem.rating}</S.Rating>
+          <S.Price>$ {productItem.price}</S.Price>
+        </S.HeaderInfomation>
+      </S.Header>
+      <S.Body>
+        <S.Label>Brand: <S.Value>{productItem.brand}</S.Value></S.Label>
+        <S.Label>Description: <S.Value>{productItem.description}</S.Value></S.Label>
+        <S.Label>Stock: <S.Value>{productItem.stock}</S.Value></S.Label>
+      </S.Body>
+      <S.Footer onPress={addEventToCalendar} testID="create-reminder-button">
+        <S.Label>Create a reminder</S.Label>
+        <FontAwesome6 name="bell" iconStyle="solid" />
+      </S.Footer>
+    </S.Container>
   );
 };
 
