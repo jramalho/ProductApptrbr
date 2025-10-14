@@ -13,6 +13,7 @@ import notifee from '@notifee/react-native';
 
 const Home: React.FC = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory.value);
   const [selectedCategoryItem, setSelectedCategoryItem] = useState<ItemType>(initialCategory);
@@ -29,16 +30,22 @@ const Home: React.FC = ({ navigation }) => {
 
   const getProducts = async () => {
     setLoading(true);
+    setError(null);
 
     const url = selectedCategoryItem.value;
     const queryString =
       `limit=${LIMIT}&skip=${productCount}&select=${INFOS_PRODUCT}&sortBy=${sortBy}&order=${sortOrder}`;
 
     const products = await service.getProducts(url, queryString);
-    const newProductsList = productsList.concat(products);
-
-    setProductsList(newProductsList);
-    setProductCount(newProductsList.length);
+    
+    if (products.length === 0 && productCount === 0) {
+      setError('Unable to load products. Please check your connection and try again.');
+    } else {
+      const newProductsList = productsList.concat(products);
+      setProductsList(newProductsList);
+      setProductCount(newProductsList.length);
+    }
+    
     setLoading(false);
   };
 
@@ -149,6 +156,9 @@ const Home: React.FC = ({ navigation }) => {
         })}
       </S.SortList>
       <S.Subtitles>Items:</S.Subtitles>
+      {error ? (
+        <Text style={{textAlign: 'center', padding: 20, color: 'red'}}>{error}</Text>
+      ) : null}
       <FlashList
         refreshing={loading}
         onRefresh={getProducts}
