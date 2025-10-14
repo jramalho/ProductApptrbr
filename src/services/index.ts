@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import NetInfo from '@react-native-community/netinfo';
 import { IProductItem, ICategories } from '../types';
 import { BASE_URL, BASE_URL_CATEGORIES } from '../constants';
 
@@ -16,11 +17,22 @@ const shouldRetry = (error: AxiosError): boolean => {
   return status === 408 || status === 429 || (status >= 500 && status < 600);
 };
 
+const checkNetworkConnection = async (): Promise<boolean> => {
+  const state = await NetInfo.fetch();
+  return state.isConnected === true && state.isInternetReachable !== false;
+};
+
 const retryRequest = async <T,>(
   requestFn: () => Promise<T>,
   retries = MAX_RETRIES
 ): Promise<T> => {
   try {
+    // Check network connection before making request
+    const hasConnection = await checkNetworkConnection();
+    if (!hasConnection) {
+      throw new Error('No internet connection');
+    }
+    
     return await requestFn();
   } catch (error) {
     if (retries > 0 && shouldRetry(error as AxiosError)) {
