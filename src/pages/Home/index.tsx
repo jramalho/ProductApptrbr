@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Text } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
@@ -8,6 +8,7 @@ import { IProductItem, ISelectInput } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
+import SearchBar from '../../components/SearchBar';
 import notifee from '@notifee/react-native';
 
 
@@ -23,6 +24,9 @@ const Home: React.FC = ({ navigation }) => {
   const [sortOrder, setSortOrder] = useState<string>('desc');
   const [productCount, setProductCount] = useState<number>(0);
   const [productsList, setProductsList] = useState<IProductItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const showProduct = (itemId: number) => {
     navigation.navigate('ProductPage', { itemId });
@@ -101,6 +105,41 @@ const Home: React.FC = ({ navigation }) => {
     });
   };
 
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setIsSearchActive(false);
+      setProductsList([]);
+      setProductCount(0);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setIsSearchActive(true);
+
+    const results = await service.searchProducts(query);
+    
+    if (results.length === 0) {
+      setError('No products found matching your search.');
+    }
+    
+    setProductsList(results);
+    setProductCount(results.length);
+    setLoading(false);
+  }, []);
+
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(text);
+    }, 500);
+  }, [performSearch]);
+
   useEffect(() => {
     notifee.requestPermission().then((granted) => {
       if (granted) {
@@ -112,23 +151,39 @@ const Home: React.FC = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (!productCount) {
+    if (!productCount && !isSearchActive) {
       getProducts();
     }
-  }, [productCount]);
+  }, [productCount, isSearchActive]);
 
   useEffect(() => {
-    setProductsList([]);
-    setProductCount(0);
+    if (!isSearchActive) {
+      setProductsList([]);
+      setProductCount(0);
+    }
 
     if (!categoryList.length) {
       getCategories();
     }
-  },[selectedCategoryItem, sortOptionsList]);
+  },[selectedCategoryItem, sortOptionsList, isSearchActive]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <S.Container>
       <S.Title>Product APP</S.Title>
+      <SearchBar 
+        value={searchQuery}
+        onChangeText={handleSearchChange}
+        placeholder="Search products..."
+        testID="search-input"
+      />
       <S.Subtitles>Category filter:</S.Subtitles>
       <DropDownPicker
         loading={loading}
@@ -139,6 +194,7 @@ const Home: React.FC = ({ navigation }) => {
         setValue={setSelectedCategory}
         onSelectItem={setSelectedCategoryItem}
         testID="dropDownPicker"
+        disabled={isSearchActive}
       />
       <S.Subtitles>Sort:</S.Subtitles>
       <S.SortList>
@@ -148,7 +204,7 @@ const Home: React.FC = ({ navigation }) => {
               key={index}
               name={name}
               icon={icon}
-              active={active}
+              active={active && !isSearchActive}
               action={() => sortAction(index)}
               testID={`sort-button-${index}`}
             />
@@ -161,7 +217,7 @@ const Home: React.FC = ({ navigation }) => {
       ) : null}
       <FlashList
         refreshing={loading}
-        onRefresh={getProducts}
+        onRefresh={isSearchActive ? () => performSearch(searchQuery) : getProducts}
         data={productsList}
         renderItem={({ item }) =>
           <ProductItem
@@ -173,7 +229,7 @@ const Home: React.FC = ({ navigation }) => {
           />
         }
         estimatedItemSize={200}
-        onEndReached={getProducts}
+        onEndReached={isSearchActive ? undefined : getProducts}
         ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
       />
     </S.Container>

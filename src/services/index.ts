@@ -83,3 +83,16 @@ export const getProductsItem = async (itemId: number, queryString: string): Prom
     return null;
   }
 };
+
+export const searchProducts = async (searchQuery: string): Promise<IProductItem[]> => {
+  try {
+    const { data } = await retryRequest(() => 
+      axios.get(`${BASE_URL}/search?q=${encodeURIComponent(searchQuery)}`)
+    );
+
+    return data.products || [];
+  } catch (error) {
+    console.error('Failed to search products:', error);
+    return [];
+  }
+};

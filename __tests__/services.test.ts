@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getProducts, getCategories, getProductsItem } from '../src/services';
+import { getProducts, getCategories, getProductsItem, searchProducts } from '../src/services';
 import { BASE_URL, BASE_URL_CATEGORIES } from '../src/constants';
 
 jest.mock('axios');
@@ -315,6 +315,87 @@ describe('API Service Functions', () => {
       const result = await getProductsItem(1, '');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('searchProducts', () => {
+    it('should search and return products successfully', async () => {
+      const mockProducts = [
+        {
+          id: 1,
+          title: 'iPhone',
+          price: 999.99,
+          rating: 4.8,
+          thumbnail: 'https://example.com/iphone.jpg',
+        },
+        {
+          id: 2,
+          title: 'iPhone Case',
+          price: 19.99,
+          rating: 4.5,
+          thumbnail: 'https://example.com/case.jpg',
+        },
+      ];
+
+      mockedAxios.get.mockResolvedValue({
+        data: { products: mockProducts },
+      });
+
+      const result = await searchProducts('iPhone');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(`${BASE_URL}/search?q=iPhone`);
+      expect(result).toEqual(mockProducts);
+    });
+
+    it('should properly encode search query with special characters', async () => {
+      mockedAxios.get.mockResolvedValue({
+        data: { products: [] },
+      });
+
+      await searchProducts('test & query');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        `${BASE_URL}/search?q=test%20%26%20query`
+      );
+    });
+
+    it('should return empty array when search query returns no results', async () => {
+      mockedAxios.get.mockResolvedValue({
+        data: { products: [] },
+      });
+
+      const result = await searchProducts('nonexistent');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array when API call fails', async () => {
+      mockedAxios.get.mockRejectedValue(new Error('Network error'));
+
+      const result = await searchProducts('test');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle empty search query', async () => {
+      mockedAxios.get.mockResolvedValue({
+        data: { products: [] },
+      });
+
+      const result = await searchProducts('');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(`${BASE_URL}/search?q=`);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle null data response', async () => {
+      mockedAxios.get.mockResolvedValue({
+        data: null,
+      });
+
+      const result = await searchProducts('test');
+
+      expect(result).toEqual([]);
     });
   });
 });
