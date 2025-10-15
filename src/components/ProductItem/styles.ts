@@ -28,10 +28,16 @@ export const Rating = Styled.Text`
   font-weight: 800;
 `;
 
+export const PriceContainer = Styled.View`
+  align-items: center;
+  gap: 4px;
+`;
+
 export const Price = Styled.Text`
   font-weight: 800;
   width: 90px;
   font-size: 14px;
+  text-align: center;
 `;
 
 export const Thumbnail = Styled.Image.attrs(() => ({

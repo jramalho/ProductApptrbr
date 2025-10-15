@@ -25,6 +25,12 @@ export const HeaderInfomation = Styled.View`
   justify-content: space-between;
 `;
 
+export const PriceRow = Styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 export const Thumbnail = Styled.Image`
   width: 100px;
   height: 100px;
