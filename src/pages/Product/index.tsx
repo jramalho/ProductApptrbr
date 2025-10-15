@@ -5,6 +5,8 @@ import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
+import FavoriteButton from '../../components/FavoriteButton';
+import { useFavoritesContext } from '../../contexts/FavoritesContext';
 
 const Home: React.FC = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
@@ -12,6 +14,7 @@ const Home: React.FC = ({ route, navigation }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [productItem, setProductItem] = useState<IProductItem | null>(null);
+  const { toggleFavorite, isFavorite } = useFavoritesContext();
 
   const addEventToCalendar = () => {
     const title = 'Important Reminder';
@@ -27,6 +30,18 @@ const Home: React.FC = ({ route, navigation }) => {
         Alert.alert('Error', errorMessage);
       }
     );
+  };
+
+  const handleFavoritePress = () => {
+    if (productItem) {
+      toggleFavorite({
+        id: productItem.id,
+        title: productItem.title,
+        price: productItem.price,
+        rating: productItem.rating,
+        thumbnail: productItem.thumbnail,
+      });
+    }
   };
 
   const getProductItem = async (id: number) => {
@@ -83,7 +98,15 @@ const Home: React.FC = ({ route, navigation }) => {
         <S.HeaderInfomation>
           <S.Title>{productItem.title}</S.Title>
           <S.Rating>Rating: {productItem.rating}</S.Rating>
-          <S.Price>$ {productItem.price}</S.Price>
+          <S.PriceRow>
+            <S.Price>$ {productItem.price}</S.Price>
+            <FavoriteButton
+              isFavorite={isFavorite(productItem.id)}
+              onPress={handleFavoritePress}
+              testID="product-favorite-button"
+              size={28}
+            />
+          </S.PriceRow>
         </S.HeaderInfomation>
       </S.Header>
       <S.Body>

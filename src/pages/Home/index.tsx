@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem, ISelectInput } from '../../types';
@@ -128,7 +129,12 @@ const Home: React.FC = ({ navigation }) => {
 
   return (
     <S.Container>
-      <S.Title>Product APP</S.Title>
+      <S.HeaderRow>
+        <S.Title>Product APP</S.Title>
+        <S.FavoritesButton onPress={() => navigation.navigate('FavoritesPage')} testID="favorites-nav-button">
+          <FontAwesome6 name="heart" iconStyle="solid" size={24} color="#ff6b6b" />
+        </S.FavoritesButton>
+      </S.HeaderRow>
       <S.Subtitles>Category filter:</S.Subtitles>
       <DropDownPicker
         loading={loading}
@@ -165,6 +171,7 @@ const Home: React.FC = ({ navigation }) => {
         data={productsList}
         renderItem={({ item }) =>
           <ProductItem
+            id={item.id}
             title={item.title}
             price={item.price}
             thumbnail={item.thumbnail}

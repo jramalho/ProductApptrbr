@@ -6,11 +6,22 @@ export const Container = Styled.View`
   background-color: #FFFFFF;
 `;
 
+export const HeaderRow = Styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+`;
+
+export const FavoritesButton = Styled.Pressable`
+  padding: 8px;
+`;
+
 export const Title = Styled.Text`
   font-size: 36px;
   font-weight: bold;
   text-align: center;
-  padding-bottom: 10px;
+  flex: 1;
 `;
 
 export const Subtitles = Styled.Text`
