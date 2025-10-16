@@ -5,6 +5,7 @@ import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
+import ProductDetailSkeleton from '../../components/ProductDetailSkeleton';
 
 const Home: React.FC = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
@@ -52,11 +53,7 @@ const Home: React.FC = ({ route, navigation }) => {
   }, [itemId]);
 
   if (loading) {
-    return (
-      <S.Loading>
-        <ActivityIndicator />
-      </S.Loading>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (error) {

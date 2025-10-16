@@ -8,6 +8,7 @@ import { IProductItem, ISelectInput } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
+import ProductItemSkeleton from '../../components/ProductItemSkeleton';
 import notifee from '@notifee/react-native';
 
 
@@ -174,7 +175,19 @@ const Home: React.FC = ({ navigation }) => {
         }
         estimatedItemSize={200}
         onEndReached={getProducts}
-        ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
+        ListEmptyComponent={
+          loading ? (
+            <>
+              <ProductItemSkeleton />
+              <ProductItemSkeleton />
+              <ProductItemSkeleton />
+              <ProductItemSkeleton />
+              <ProductItemSkeleton />
+            </>
+          ) : (
+            <Text>No items found!</Text>
+          )
+        }
       />
     </S.Container>
   );
