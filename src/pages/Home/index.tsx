@@ -8,6 +8,7 @@ import { IProductItem, ISelectInput } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
+import EmptyState from '../../components/EmptyState';
 import notifee from '@notifee/react-native';
 
 
@@ -157,25 +158,45 @@ const Home: React.FC = ({ navigation }) => {
       </S.SortList>
       <S.Subtitles>Items:</S.Subtitles>
       {error ? (
-        <Text style={{textAlign: 'center', padding: 20, color: 'red'}}>{error}</Text>
-      ) : null}
-      <FlashList
-        refreshing={loading}
-        onRefresh={getProducts}
-        data={productsList}
-        renderItem={({ item }) =>
-          <ProductItem
-            title={item.title}
-            price={item.price}
-            thumbnail={item.thumbnail}
-            rating={item.rating}
-            action={() => showProduct(item.id)}
-          />
-        }
-        estimatedItemSize={200}
-        onEndReached={getProducts}
-        ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
-      />
+        <EmptyState
+          icon="⚠️"
+          title="Unable to Load Products"
+          message={error}
+          actionText="Try Again"
+          onAction={() => {
+            setError(null);
+            getProducts();
+          }}
+          testID="error-empty-state"
+        />
+      ) : (
+        <FlashList
+          refreshing={loading}
+          onRefresh={getProducts}
+          data={productsList}
+          renderItem={({ item }) =>
+            <ProductItem
+              title={item.title}
+              price={item.price}
+              thumbnail={item.thumbnail}
+              rating={item.rating}
+              action={() => showProduct(item.id)}
+            />
+          }
+          estimatedItemSize={200}
+          onEndReached={getProducts}
+          ListEmptyComponent={!loading ? (
+            <EmptyState
+              icon="🔍"
+              title="No Products Found"
+              message="We couldn't find any products. Try adjusting your filters or check back later."
+              actionText="Refresh"
+              onAction={getProducts}
+              testID="no-products-empty-state"
+            />
+          ) : <></>}
+        />
+      )}
     </S.Container>
   );
 };

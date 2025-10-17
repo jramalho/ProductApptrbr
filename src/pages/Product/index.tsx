@@ -5,6 +5,7 @@ import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
+import EmptyState from '../../components/EmptyState';
 
 const Home: React.FC = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
@@ -62,18 +63,31 @@ const Home: React.FC = ({ route, navigation }) => {
   if (error) {
     return (
       <S.Container>
-        <S.Body>
-          <S.Label>{error}</S.Label>
-          <S.Footer onPress={handleRetry} testID="retry-button">
-            <S.Label>Retry</S.Label>
-          </S.Footer>
-        </S.Body>
+        <EmptyState
+          icon="❌"
+          title="Product Not Available"
+          message={error}
+          actionText="Try Again"
+          onAction={handleRetry}
+          testID="product-error-empty-state"
+        />
       </S.Container>
     );
   }
 
   if (!productItem) {
-    return null;
+    return (
+      <S.Container>
+        <EmptyState
+          icon="📦"
+          title="Product Not Found"
+          message="The product you're looking for doesn't exist or has been removed."
+          actionText="Go Back"
+          onAction={() => navigation.goBack()}
+          testID="product-not-found-empty-state"
+        />
+      </S.Container>
+    );
   }
 
   return (
