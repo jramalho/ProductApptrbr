@@ -126,10 +126,21 @@ const Home: React.FC = ({ navigation }) => {
     }
   },[selectedCategoryItem, sortOptionsList]);
 
+  const currentCategoryLabel = selectedCategoryItem.label || 'All Products';
+  const activeSortOption = sortOptionsList.find(opt => opt.active);
+  const sortStatusLabel = activeSortOption 
+    ? `Sorted by ${activeSortOption.name}` 
+    : 'Not sorted';
+
   return (
     <S.Container>
-      <S.Title>Product APP</S.Title>
-      <S.Subtitles>Category filter:</S.Subtitles>
+      <S.Title 
+        accessibilityRole="header"
+        accessibilityLabel="Product App Home"
+      >
+        Product APP
+      </S.Title>
+      <S.Subtitles accessibilityRole="text">Category filter:</S.Subtitles>
       <DropDownPicker
         loading={loading}
         open={categoryOpen}
@@ -139,9 +150,17 @@ const Home: React.FC = ({ navigation }) => {
         setValue={setSelectedCategory}
         onSelectItem={setSelectedCategoryItem}
         testID="dropDownPicker"
+        accessible={true}
+        accessibilityLabel={`Category filter. Currently selected: ${currentCategoryLabel}`}
+        accessibilityHint="Double tap to open category selection menu"
+        accessibilityRole="button"
       />
-      <S.Subtitles>Sort:</S.Subtitles>
-      <S.SortList>
+      <S.Subtitles accessibilityRole="text">Sort:</S.Subtitles>
+      <S.SortList 
+        accessible={true}
+        accessibilityRole="menu"
+        accessibilityLabel={`Sort options. ${sortStatusLabel}`}
+      >
         {sortOptionsList.map(({name, icon, active}, index) => {
           return (
             <SortButton
@@ -155,9 +174,18 @@ const Home: React.FC = ({ navigation }) => {
           );
         })}
       </S.SortList>
-      <S.Subtitles>Items:</S.Subtitles>
+      <S.Subtitles accessibilityRole="text">
+        Items: {productsList.length > 0 ? `${productsList.length} products` : ''}
+      </S.Subtitles>
       {error ? (
-        <Text style={{textAlign: 'center', padding: 20, color: 'red'}}>{error}</Text>
+        <Text 
+          style={{textAlign: 'center', padding: 20, color: 'red'}}
+          accessible={true}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
+          {error}
+        </Text>
       ) : null}
       <FlashList
         refreshing={loading}
@@ -174,7 +202,20 @@ const Home: React.FC = ({ navigation }) => {
         }
         estimatedItemSize={200}
         onEndReached={getProducts}
-        ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
+        ListEmptyComponent={
+          !loading ? (
+            <Text 
+              accessible={true}
+              accessibilityRole="text"
+              accessibilityLabel="No products found"
+            >
+              No items found!
+            </Text>
+          ) : <></>
+        }
+        accessible={true}
+        accessibilityRole="list"
+        accessibilityLabel={`Product list. ${productsList.length} products displayed.`}
       />
     </S.Container>
   );

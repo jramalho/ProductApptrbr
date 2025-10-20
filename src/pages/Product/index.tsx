@@ -53,8 +53,12 @@ const Home: React.FC = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <S.Loading>
-        <ActivityIndicator />
+      <S.Loading 
+        accessible={true}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading product details"
+      >
+        <ActivityIndicator accessibilityElementsHidden={true} importantForAccessibility="no-hide-descendants" />
       </S.Loading>
     );
   }
@@ -63,9 +67,22 @@ const Home: React.FC = ({ route, navigation }) => {
     return (
       <S.Container>
         <S.Body>
-          <S.Label>{error}</S.Label>
-          <S.Footer onPress={handleRetry} testID="retry-button">
-            <S.Label>Retry</S.Label>
+          <S.Label 
+            accessible={true}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+          >
+            {error}
+          </S.Label>
+          <S.Footer 
+            onPress={handleRetry} 
+            testID="retry-button"
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading product"
+            accessibilityHint="Double tap to retry loading the product details"
+          >
+            <S.Label importantForAccessibility="no-hide-descendants">Retry</S.Label>
           </S.Footer>
         </S.Body>
       </S.Container>
@@ -76,24 +93,51 @@ const Home: React.FC = ({ route, navigation }) => {
     return null;
   }
 
+  const formattedPrice = `$${productItem.price.toFixed(2)}`;
+  const stockStatus = productItem.stock > 0 ? `${productItem.stock} units in stock` : 'Out of stock';
+
   return (
     <S.Container>
-      <S.Header>
-        <S.Thumbnail source={{uri:productItem.thumbnail}}/>
+      <S.Header 
+        accessible={true}
+        accessibilityRole="header"
+        accessibilityLabel={`${productItem.title}, priced at ${formattedPrice}, rating ${productItem.rating} out of 5`}
+      >
+        <S.Thumbnail 
+          source={{uri:productItem.thumbnail}}
+          accessible={true}
+          accessibilityRole="image"
+          accessibilityLabel={`${productItem.title} product image`}
+        />
         <S.HeaderInfomation>
-          <S.Title>{productItem.title}</S.Title>
-          <S.Rating>Rating: {productItem.rating}</S.Rating>
-          <S.Price>$ {productItem.price}</S.Price>
+          <S.Title accessibilityRole="text">{productItem.title}</S.Title>
+          <S.Rating accessibilityLabel={`Rating: ${productItem.rating} out of 5 stars`}>
+            Rating: {productItem.rating}
+          </S.Rating>
+          <S.Price accessibilityLabel={formattedPrice}>$ {productItem.price}</S.Price>
         </S.HeaderInfomation>
       </S.Header>
       <S.Body>
-        <S.Label>Brand: <S.Value>{productItem.brand}</S.Value></S.Label>
-        <S.Label>Description: <S.Value>{productItem.description}</S.Value></S.Label>
-        <S.Label>Stock: <S.Value>{productItem.stock}</S.Value></S.Label>
+        <S.Label accessibilityRole="text">
+          Brand: <S.Value accessibilityLabel={`Brand is ${productItem.brand}`}>{productItem.brand}</S.Value>
+        </S.Label>
+        <S.Label accessibilityRole="text">
+          Description: <S.Value accessibilityLabel={productItem.description}>{productItem.description}</S.Value>
+        </S.Label>
+        <S.Label accessibilityRole="text">
+          Stock: <S.Value accessibilityLabel={stockStatus}>{productItem.stock}</S.Value>
+        </S.Label>
       </S.Body>
-      <S.Footer onPress={addEventToCalendar} testID="create-reminder-button">
-        <S.Label>Create a reminder</S.Label>
-        <FontAwesome6 name="bell" iconStyle="solid" />
+      <S.Footer 
+        onPress={addEventToCalendar} 
+        testID="create-reminder-button"
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Create a reminder for this product"
+        accessibilityHint="Double tap to add a calendar event reminder for this product"
+      >
+        <S.Label importantForAccessibility="no-hide-descendants">Create a reminder</S.Label>
+        <FontAwesome6 name="bell" iconStyle="solid" importantForAccessibility="no-hide-descendants" />
       </S.Footer>
     </S.Container>
   );
