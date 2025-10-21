@@ -19,3 +19,7 @@ export interface ISelectInput {
   label: string,
   value: string,
 }
+
+// Re-export navigation types
+export type { RootStackParamList } from './navigation';
+

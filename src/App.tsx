@@ -5,8 +5,9 @@ import HomePage from './pages/Home';
 import ProductPage from './pages/Product';
 import ErrorBoundary from './components/ErrorBoundary';
 import NetworkStatusIndicator from './components/NetworkStatusIndicator';
+import { RootStackParamList } from './types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const linking = {
   prefixes: ['productapp://'],
