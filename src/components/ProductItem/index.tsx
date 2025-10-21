@@ -1,6 +1,14 @@
 import * as S from './styles';
 
-const ProductItem: React.FC = ({ title, price, rating, thumbnail, action }) => {
+interface ProductItemProps {
+  title: string;
+  price: number;
+  rating: number;
+  thumbnail: string;
+  action: () => void;
+}
+
+const ProductItem: React.FC<ProductItemProps> = ({ title, price, rating, thumbnail, action }) => {
 
   return (
     <S.Container onPress={action}>

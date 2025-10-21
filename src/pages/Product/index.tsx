@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, NativeModules } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import * as service from '../../services';
 import * as S from './styles';
-import { IProductItem } from '../../types';
+import { IProductItem, RootStackParamList } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
 
-const Home: React.FC = ({ route, navigation }) => {
+type ProductScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductPage'>;
+
+const Home: React.FC<ProductScreenProps> = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
   const { itemId } = route.params;
   const [loading, setLoading] = useState<boolean>(false);

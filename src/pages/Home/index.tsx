@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 import * as service from '../../services';
 import * as S from './styles';
-import { IProductItem, ISelectInput } from '../../types';
+import { IProductItem, ISelectInput, RootStackParamList } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
 import notifee from '@notifee/react-native';
 
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'HomePage'
+>;
 
-const Home: React.FC = ({ navigation }) => {
+interface HomeProps {
+  navigation: HomeScreenNavigationProp;
+}
+
+const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
