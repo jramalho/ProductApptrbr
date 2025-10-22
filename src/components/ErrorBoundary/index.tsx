@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
+  fallback?: (error: Error, resetError: () => void) => ReactNode;
 }
 
 interface State {
@@ -29,9 +29,10 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // In production, you might want to log this to an error reporting service
   }
 
-  handleReset = (): void => {
+  resetError = (): void => {
     this.setState({
       hasError: false,
       error: null,
@@ -39,18 +40,23 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render(): ReactNode {
-    if (this.state.hasError) {
+    if (this.state.hasError && this.state.error) {
       if (this.props.fallback) {
-        return this.props.fallback;
+        return this.props.fallback(this.state.error, this.resetError);
       }
 
       return (
         <View style={styles.container}>
+          <Text style={styles.emoji}>😕</Text>
           <Text style={styles.title}>Oops! Something went wrong</Text>
           <Text style={styles.message}>
-            {this.state.error?.message || 'An unexpected error occurred'}
+            We encountered an unexpected error. Don't worry, your data is safe. Please try restarting the app or contact support if the problem persists.
           </Text>
-          <TouchableOpacity style={styles.button} onPress={this.handleReset}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={this.resetError}
+            testID="error-boundary-retry-button"
+          >
             <Text style={styles.buttonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -66,25 +72,31 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
     backgroundColor: '#fff',
   },
+  emoji: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 12,
     color: '#333',
+    textAlign: 'center',
   },
   message: {
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
     color: '#666',
+    lineHeight: 24,
   },
   button: {
     backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
     borderRadius: 8,
   },
   buttonText: {

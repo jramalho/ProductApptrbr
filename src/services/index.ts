@@ -54,7 +54,7 @@ export const getProducts = async (
     return data.products || [];
   } catch (error) {
     console.error('Failed to fetch products:', error);
-    return [];
+    throw error; // Re-throw to allow caller to handle
   }
 };
 
@@ -67,7 +67,7 @@ export const getCategories = async (): Promise<ICategories[]> => {
     return data || [];
   } catch (error) {
     console.error('Failed to fetch categories:', error);
-    return [];
+    throw error; // Re-throw to allow caller to handle
   }
 };
 
@@ -80,6 +80,6 @@ export const getProductsItem = async (itemId: number, queryString: string): Prom
     return data;
   } catch (error) {
     console.error('Failed to fetch product item:', error);
-    return null;
+    throw error; // Re-throw to allow caller to handle
   }
 };
