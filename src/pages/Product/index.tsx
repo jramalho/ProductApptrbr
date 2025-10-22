@@ -5,12 +5,14 @@ import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem } from '../../types';
 import { INFOS_PRODUCT_ITEM } from '../../constants';
+import ErrorMessage from '../../components/ErrorMessage';
+import { getErrorDetails } from '../../utils/errorMessages';
 
 const Home: React.FC = ({ route, navigation }) => {
   const { CalendarModule } = NativeModules;
   const { itemId } = route.params;
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [productItem, setProductItem] = useState<IProductItem | null>(null);
 
   const addEventToCalendar = () => {
@@ -32,19 +34,29 @@ const Home: React.FC = ({ route, navigation }) => {
   const getProductItem = async (id: number) => {
     setLoading(true);
     setError(null);
-    const queryString = `?select=${INFOS_PRODUCT_ITEM}`;
-    const item = await service.getProductsItem(id, queryString);
 
-    if (!item) {
-      setError('Product not found. Please try again later.');
-    } else {
-      setProductItem(item);
+    try {
+      const queryString = `?select=${INFOS_PRODUCT_ITEM}`;
+      const item = await service.getProductsItem(id, queryString);
+
+      if (!item) {
+        setError(new Error('Product not found'));
+      } else {
+        setProductItem(item);
+      }
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleRetry = () => {
     getProductItem(itemId);
+  };
+
+  const handleGoBack = () => {
+    navigation.goBack();
   };
 
   useEffect(() => {
@@ -60,14 +72,15 @@ const Home: React.FC = ({ route, navigation }) => {
   }
 
   if (error) {
+    const errorDetails = getErrorDetails(error);
     return (
       <S.Container>
-        <S.Body>
-          <S.Label>{error}</S.Label>
-          <S.Footer onPress={handleRetry} testID="retry-button">
-            <S.Label>Retry</S.Label>
-          </S.Footer>
-        </S.Body>
+        <ErrorMessage
+          {...errorDetails}
+          onAction={errorDetails.isRetryable ? handleRetry : handleGoBack}
+          icon={errorDetails.isRetryable ? '⚠️' : '❌'}
+          testID="product-error-message"
+        />
       </S.Container>
     );
   }

@@ -8,12 +8,14 @@ import { IProductItem, ISelectInput } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
+import ErrorMessage from '../../components/ErrorMessage';
+import { getErrorDetails } from '../../utils/errorMessages';
 import notifee from '@notifee/react-native';
 
 
 const Home: React.FC = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [categoryOpen, setCategoryOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory.value);
   const [selectedCategoryItem, setSelectedCategoryItem] = useState<ItemType>(initialCategory);
@@ -32,37 +34,47 @@ const Home: React.FC = ({ navigation }) => {
     setLoading(true);
     setError(null);
 
-    const url = selectedCategoryItem.value;
-    const queryString =
-      `limit=${LIMIT}&skip=${productCount}&select=${INFOS_PRODUCT}&sortBy=${sortBy}&order=${sortOrder}`;
+    try {
+      const url = selectedCategoryItem.value;
+      const queryString =
+        `limit=${LIMIT}&skip=${productCount}&select=${INFOS_PRODUCT}&sortBy=${sortBy}&order=${sortOrder}`;
 
-    const products = await service.getProducts(url, queryString);
-    
-    if (products.length === 0 && productCount === 0) {
-      setError('Unable to load products. Please check your connection and try again.');
-    } else {
+      const products = await service.getProducts(url, queryString);
+      
       const newProductsList = productsList.concat(products);
       setProductsList(newProductsList);
       setProductCount(newProductsList.length);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const getCategories = async () => {
-    const categoriesList: ISelectInput[] = [];
-    const categories = await service.getCategories();
+    try {
+      const categoriesList: ISelectInput[] = [];
+      const categories = await service.getCategories();
 
-    categoriesList.push(initialCategory);
+      categoriesList.push(initialCategory);
 
-    categories.map((category) => {
-      categoriesList.push({
-        label: category.name,
-        value: category.url,
+      categories.map((category) => {
+        categoriesList.push({
+          label: category.name,
+          value: category.url,
+        });
       });
-    });
 
-    setCategoryList(categoriesList);
+      setCategoryList(categoriesList);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+      // Silently fail for categories - use default category list
+    }
+  };
+
+  const handleRetry = () => {
+    setProductsList([]);
+    setProductCount(0);
   };
 
   const sortAction = async (index: number) => {
@@ -156,26 +168,31 @@ const Home: React.FC = ({ navigation }) => {
         })}
       </S.SortList>
       <S.Subtitles>Items:</S.Subtitles>
-      {error ? (
-        <Text style={{textAlign: 'center', padding: 20, color: 'red'}}>{error}</Text>
-      ) : null}
-      <FlashList
-        refreshing={loading}
-        onRefresh={getProducts}
-        data={productsList}
-        renderItem={({ item }) =>
-          <ProductItem
-            title={item.title}
-            price={item.price}
-            thumbnail={item.thumbnail}
-            rating={item.rating}
-            action={() => showProduct(item.id)}
-          />
-        }
-        estimatedItemSize={200}
-        onEndReached={getProducts}
-        ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
-      />
+      {error && productsList.length === 0 ? (
+        <ErrorMessage
+          {...getErrorDetails(error)}
+          onAction={handleRetry}
+          testID="home-error-message"
+        />
+      ) : (
+        <FlashList
+          refreshing={loading}
+          onRefresh={getProducts}
+          data={productsList}
+          renderItem={({ item }) =>
+            <ProductItem
+              title={item.title}
+              price={item.price}
+              thumbnail={item.thumbnail}
+              rating={item.rating}
+              action={() => showProduct(item.id)}
+            />
+          }
+          estimatedItemSize={200}
+          onEndReached={getProducts}
+          ListEmptyComponent={!loading ? <Text>No items found!</Text> : <></>}
+        />
+      )}
     </S.Container>
   );
 };
