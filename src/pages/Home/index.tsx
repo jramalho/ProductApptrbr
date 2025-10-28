@@ -8,6 +8,8 @@ import { IProductItem, ISelectInput } from '../../types';
 import { INFOS_PRODUCT, initialCategory, LIMIT, sortOptions } from '../../constants';
 import SortButton from '../../components/SortButton';
 import ProductItem from '../../components/ProductItem';
+import OfflineIndicator from '../../components/OfflineIndicator';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import notifee from '@notifee/react-native';
 
 
@@ -23,6 +25,8 @@ const Home: React.FC = ({ navigation }) => {
   const [sortOrder, setSortOrder] = useState<string>('desc');
   const [productCount, setProductCount] = useState<number>(0);
   const [productsList, setProductsList] = useState<IProductItem[]>([]);
+  const [isUsingCache, setIsUsingCache] = useState<boolean>(false);
+  const { isConnected } = useNetworkStatus();
 
   const showProduct = (itemId: number) => {
     navigation.navigate('ProductPage', { itemId });
@@ -40,10 +44,14 @@ const Home: React.FC = ({ navigation }) => {
     
     if (products.length === 0 && productCount === 0) {
       setError('Unable to load products. Please check your connection and try again.');
+      setIsUsingCache(false);
     } else {
       const newProductsList = productsList.concat(products);
       setProductsList(newProductsList);
       setProductCount(newProductsList.length);
+      
+      // Check if we're using cached data
+      setIsUsingCache(!isConnected && products.length > 0);
     }
     
     setLoading(false);
@@ -128,6 +136,7 @@ const Home: React.FC = ({ navigation }) => {
 
   return (
     <S.Container>
+      <OfflineIndicator isOffline={isUsingCache} />
       <S.Title>Product APP</S.Title>
       <S.Subtitles>Category filter:</S.Subtitles>
       <DropDownPicker
