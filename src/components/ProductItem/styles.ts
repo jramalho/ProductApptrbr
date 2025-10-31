@@ -34,9 +34,8 @@ export const Price = Styled.Text`
   font-size: 14px;
 `;
 
-export const Thumbnail = Styled.Image.attrs(() => ({
-  resizeMode: 'cover',
-}))`
+export const ThumbnailContainer = Styled.View`
   width: 80px;
   height: 80px;
+  overflow: hidden;
 `;

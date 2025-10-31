@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, NativeModules } from 'react-native';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
+import OptimizedImage from '../../components/OptimizedImage';
 import * as service from '../../services';
 import * as S from './styles';
 import { IProductItem } from '../../types';
@@ -79,7 +80,13 @@ const Home: React.FC = ({ route, navigation }) => {
   return (
     <S.Container>
       <S.Header>
-        <S.Thumbnail source={{uri:productItem.thumbnail}}/>
+        <S.ThumbnailContainer>
+          <OptimizedImage 
+            uri={productItem.thumbnail}
+            testID="product-detail-image"
+            showPlaceholder={true}
+          />
+        </S.ThumbnailContainer>
         <S.HeaderInfomation>
           <S.Title>{productItem.title}</S.Title>
           <S.Rating>Rating: {productItem.rating}</S.Rating>
