@@ -25,9 +25,10 @@ export const HeaderInfomation = Styled.View`
   justify-content: space-between;
 `;
 
-export const Thumbnail = Styled.Image`
+export const ThumbnailContainer = Styled.View`
   width: 100px;
   height: 100px;
+  overflow: hidden;
 `;
 
 export const Title = Styled.Text`
@@ -70,4 +71,3 @@ export const Footer = Styled.Pressable`
   padding: 10px;
   gap: 10px;
 `;
-
