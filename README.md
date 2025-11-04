@@ -90,6 +90,41 @@ npx uri-scheme open "productapp://product/1" --ios
 npx uri-scheme open "productapp://product/1" --android
 ```
 
+## Code Quality
+
+This project uses automated code quality tools to maintain consistent code style and catch errors early:
+
+- **Husky**: Git hooks for automated checks
+- **lint-staged**: Runs linters on staged files only
+- **ESLint**: JavaScript/TypeScript code linting
+- **Prettier**: Code formatting
+- **Conventional Commits**: Standardized commit messages
+
+### Available Scripts
+
+```bash
+# Lint code
+yarn lint
+yarn lint:fix
+
+# Format code
+yarn format
+yarn format:check
+
+# Type check
+yarn type-check
+
+# Run tests
+yarn test
+```
+
+### Git Hooks
+
+- **Pre-commit**: Automatically lints and formats staged files
+- **Commit-msg**: Validates commit message format (Conventional Commits)
+
+For more details, see [CODE_QUALITY.md](CODE_QUALITY.md).
+
 ## License
 
 This project is licensed under the terms of the **GNU General Public License v3.0**.
